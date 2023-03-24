@@ -3,14 +3,12 @@ namespace hw4
 {
 	public abstract class SolverTemplate
 	{
-		private int[,] board { get; }
-		private int[,] solution { get; set; }
+		public GameBoard Board { get; }
 
 		// Constructor
-		public SolverTemplate(int[,] board)
+		public SolverTemplate(GameBoard board)
 		{
-			this.board = board;
-			this.solution = new int[board.Length, board.Length];
+			this.Board = board;
 		}
 
 		/// <summary>
@@ -18,11 +16,11 @@ namespace hw4
 		/// </summary>
 		/// <param name="row">The row to check</param>
 		/// <param name="value">The value to check for</param>
-		public bool CheckRow(int row, int value)
+		public bool CheckRow(int row, string value)
 		{
-			for (int i = 0; i < 9; i++)
+			for (int i = 0; i < Board.BoardSize; i++)
 			{
-				if (board[row, i] == value)
+				if (Board.Board[row, i] == value)
 				{
 					return false;
 				}
@@ -35,11 +33,11 @@ namespace hw4
 		/// </summary>
 		/// <param name="col">The column to check</param>
 		/// <param name="value">The value to check for</param>
-		public bool CheckCol(int col, int value)
+		public bool CheckCol(int col, string value)
 		{
-			for (int i = 0; i < 9; i++)
+			for (int i = 0; i < Board.BoardSize; i++)
 			{
-				if (board[i, col] == value)
+				if (Board.Board[i, col] == value)
 				{
 					return false;
 				}
@@ -53,16 +51,16 @@ namespace hw4
 		/// <param name="row">The row to check</param>
 		/// <param name="col">The column to check</param>
 		/// <param name="value">The value to check for</param>
-		public bool CheckBox(int row, int col, int value)
+		public bool CheckBox(int row, int col, string value)
 		{
-			int rowStart = row - row % 3;
-			int colStart = col - col % 3;
+			int rowStart = row - row % Board.SquareSize;
+			int colStart = col - col % Board.SquareSize;
 
-			for (int i = rowStart; i < rowStart + 3; i++)
+			for (int i = rowStart; i < rowStart; i++)
 			{
-				for (int j = colStart; j < colStart + 3; j++)
+				for (int j = colStart; j < colStart; j++)
 				{
-					if (board[i, j] == value)
+					if (Board.Board[i, j] == value)
 					{
 						return false;
 					}
@@ -72,9 +70,53 @@ namespace hw4
 		}
 
 		/// <summary>
+		/// Checks if a value is in a row, column, or box
+		/// </summary>
+		public bool PerformChecks(int row, int col, string value)
+		{
+			bool inRow = CheckRow(row, value);
+			bool inCol = CheckCol(col, value);
+			bool inBox = CheckBox(row, col, value);
+
+			return inRow && inCol && inBox;
+		}
+
+		/// <summary>
 		/// Solves the board
 		/// </summary>
-		public abstract bool Solve();
+		public GameBoard Solve() 
+		{
+			GameBoard solvedBoard = Board;
+			try {
+				for (int i = 0; i < solvedBoard.BoardSize; i++)
+				{
+					for (int j = 0; j < solvedBoard.BoardSize; j++)
+					{
+						if (solvedBoard.Board[i, j] == "-")
+						{
+							solvedBoard = UseStrategy(i, j, solvedBoard);
+						}
+						else
+						{
+							continue;
+						}
+					}
+				}
+
+				return solvedBoard;
+			}
+			catch
+			{
+				Console.WriteLine("Error: Could not solve sudoku board");
+				return Board;
+			}
+		}
+
+		/// <summary>
+		///	Uses the specific strategy implemented by the child class
+		/// </summary>
+		/// <param name="row">The row to check</param>
+		/// <param name="column">The column to check</param>
+		public abstract GameBoard UseStrategy(int row, int column, GameBoard board);
 	}
 }
-
