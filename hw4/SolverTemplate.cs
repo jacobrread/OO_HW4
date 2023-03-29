@@ -56,11 +56,11 @@ namespace hw4
 			int rowStart = row - row % Board.SquareSize;
 			int colStart = col - col % Board.SquareSize;
 
-			for (int i = rowStart; i < rowStart; i++)
+			for (int i = 0; i < Board.SquareSize; i++)
 			{
-				for (int j = colStart; j < colStart; j++)
+				for (int j = 0; j < Board.SquareSize; j++)
 				{
-					if (Board.Board[i, j] == value)
+					if (Board.Board[i + rowStart, j + colStart] == value)
 					{
 						return false;
 					}
@@ -72,7 +72,7 @@ namespace hw4
 		/// <summary>
 		/// Checks if a value is in a row, column, or box
 		/// </summary>
-		public bool PerformChecks(int row, int col, string value)
+		public bool ChecksOut(int row, int col, string value)
 		{
 			bool inRow = CheckRow(row, value);
 			bool inCol = CheckCol(col, value);
@@ -82,34 +82,36 @@ namespace hw4
 		}
 
 		/// <summary>
-		/// Solves the board
+		/// Solves the board recursively
 		/// </summary>
-		public GameBoard Solve() 
+		public bool Solve(int row, int col) 
 		{
-			GameBoard solvedBoard = Board;
-			try {
-				for (int i = 0; i < solvedBoard.BoardSize; i++)
-				{
-					for (int j = 0; j < solvedBoard.BoardSize; j++)
-					{
-						if (solvedBoard.Board[i, j] == "-")
-						{
-							solvedBoard = UseStrategy(i, j, solvedBoard);
-						}
-						else
-						{
-							continue;
-						}
-					}
-				}
-
-				return solvedBoard;
-			}
-			catch
+			// If we've reached the end of the board, we're done
+			if (row == Board.BoardSize - 1 && col == Board.BoardSize)
 			{
-				Console.WriteLine("Error: Could not solve sudoku board");
-				return Board;
+				return true;
 			}
+
+			// If we've reached the end of the row, move to the next row
+			if (col == Board.BoardSize)
+			{
+				row++;
+				col = 0;
+			}
+
+			// If the current cell is already filled, move to the next cell
+			if (Board.Board[row, col] != "-")
+			{
+				return Solve(row, col + 1);
+			}
+
+			if (UseStrategy(row, col))
+			{
+				return Solve(row, col + 1);
+			}
+
+			// If we've reached this point, we've tried all possible values and none of them worked
+			return false;
 		}
 
 		/// <summary>
@@ -117,6 +119,6 @@ namespace hw4
 		/// </summary>
 		/// <param name="row">The row to check</param>
 		/// <param name="column">The column to check</param>
-		public abstract GameBoard UseStrategy(int row, int column, GameBoard board);
+		public abstract bool UseStrategy(int row, int column);
 	}
 }

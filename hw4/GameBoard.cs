@@ -6,6 +6,7 @@ namespace hw4
 		public int BoardSize { get; }
 		public string[] Characters { get; }
 		public string[,] Board { get; set; }
+		public string[,] OriginalBoard { get; }
 		public int SquareSize { get; }
 
 		public GameBoard(string filePath)
@@ -30,6 +31,9 @@ namespace hw4
 					Board[i - 2, j] = row[j];
 				}
 			}
+
+			// Save the original board
+			this.OriginalBoard = this.Board.Clone() as string[,];
 
 			// Close the file
 			sr.Close();

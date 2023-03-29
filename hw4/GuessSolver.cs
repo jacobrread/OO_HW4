@@ -7,20 +7,26 @@ namespace hw4
 		public GuessSolver(GameBoard board) : base(board) {}
 
 		/// <summary>
-		/// Solves the board
+		/// 
 		/// </summary>
-		public override GameBoard UseStrategy(int row, int column, GameBoard board)
+		public override bool UseStrategy(int row, int col)
 		{
-			foreach (string value in board.Characters)
+			// Try all possible values
+			foreach (string value in Board.Characters)
 			{
-				if (PerformChecks(row, column, value))
+				// If the value is valid, use it
+				if (ChecksOut(row, col, value))
 				{
-					board.Board[row, column] = value;
-					//Console.WriteLine("Updated a value");
-				}
-			}	
+					Board.Board[row, col] = value;
 
-			return board;
+					if (Solve(row, col + 1))
+					{
+						return true;
+					}
+				}
+			}
+
+			return false;
 		}
-	}
+    }
 }

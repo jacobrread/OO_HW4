@@ -20,21 +20,29 @@ namespace hw4
             //if (args[2] == "true") DisplayBoard(sudokuBoard);
 
             // TODO: Remove this once you are ready to test your command line arguments
-             //string inputFilePath = "/Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-4x4-0001.txt";
-            //string inputFilePath = "/Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-9x9-0103.txt";
-            //string inputFilePath = "/Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-16x16-0002.txt";
-            //string inputFilePath = "/Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-25x25-0902.txt";
-            string inputFilePath = "/Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-36x36-01-C001.txt";
+            // string inputFilePath = "/Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-4x4-0001.txt";
+             string inputFilePath = "/Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-9x9-0001.txt";
+            //string inputFilePath = "/Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-16x16-0001.txt";
+            //string inputFilePath = "/Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-25x25-0101.txt";
+            //string inputFilePath = "/Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-36x36-01-A001.txt";
             string solverName = "GuessSolver";
             GameBoard sudokuBoard = new(inputFilePath);
 
             DisplayBoard(sudokuBoard, "Starting");
 
             GuessSolver guessSolver = new(sudokuBoard);
-            
+
             // Start the timer
             var watch = System.Diagnostics.Stopwatch.StartNew();
-            GameBoard solvedBoard = guessSolver.Solve();
+            if (guessSolver.Solve(0, 0)) 
+            {
+                Console.WriteLine("\nSolved!\n");
+            } 
+            else 
+            {
+                Console.WriteLine("\nNo solution found\n");
+            }
+
             // Stop the timer
             watch.Stop();
             var elapsedMs = watch.ElapsedMilliseconds;
@@ -44,7 +52,7 @@ namespace hw4
                 TimeSpan.FromMilliseconds(elapsedMs).Seconds,
                 TimeSpan.FromMilliseconds(elapsedMs).Milliseconds / 10);
 
-            OutputSolution(solvedBoard, false, elapsedTime);
+            OutputSolution(sudokuBoard, elapsedTime);
         }
 
         /// <summary>
@@ -61,46 +69,77 @@ namespace hw4
                 for (int j = 0; j < board.BoardSize; j++)
                 {
                     Console.Write(board.Board[i, j] + " ");
+
+                    if ((j + 1) % board.SquareSize == 0 && j != board.BoardSize - 1)
+                    {
+                        Console.Write("| ");
+                    }
                 }
                 Console.WriteLine();
+
+                if ((i + 1) % board.SquareSize == 0 && i != board.BoardSize - 1)
+                {
+                    for (int j = 0; j < board.BoardSize; j++)
+                    {
+                        Console.Write("--");
+                        if ((j + 1) % board.SquareSize == 0 && j != board.BoardSize - 1)
+                        {
+                            Console.Write("+-");
+                        }
+                    }
+                    Console.WriteLine();
+                }
             }
         }
 
         /// <summary>
         /// Outputs the solution to a file
         /// </summary>
-        public static void OutputSolution(GameBoard board, bool displayToConsole, string elapsedTime)
+        public static void OutputSolution(GameBoard board, string elapsedTime)
         {
-            if (displayToConsole)
+            DisplayBoard(board, "\nFinal");
+
+            try
             {
-                DisplayBoard(board, "\nFinal");
-            }
-            else
-            {
-                try
+                //// TODO: Make this output location dynamic
+                StreamWriter sw = new StreamWriter("/Users/jacobread/Desktop/OO/hw4/hw4/Output.txt");
+
+                // Add board size, characters, and original board to output file
+                sw.WriteLine(board.BoardSize);
+                foreach (string c in board.Characters)
                 {
-                    //// TODO: Make this output location dynamic
-                    StreamWriter sw = new StreamWriter("/Users/jacobread/Desktop/OO/hw4/hw4/Output.txt");
-                    sw.WriteLine("Solved");
+                    sw.Write(c + " ");
+                }
+                sw.WriteLine();
 
-
-                    for (int i = 0; i < board.BoardSize; i++)
+                for (int i = 0; i < board.BoardSize; i++)
+                {
+                    for (int j = 0; j < board.BoardSize; j++)
                     {
-                        for (int j = 0; j < board.BoardSize; j++)
-                        {
-                            sw.Write(board.Board[i, j] + " ");
-                        }
-                        sw.WriteLine();
+                        sw.Write(board.OriginalBoard[i, j] + " ");
                     }
-
-                    sw.WriteLine("\nTotal time: {0}", elapsedTime);
-
-                    sw.Close();
+                    sw.WriteLine();
                 }
-                catch(Exception e)
+                sw.WriteLine();
+
+                // Add solution to output file
+                sw.WriteLine("Solved");
+                for (int i = 0; i < board.BoardSize; i++)
                 {
-                    Console.WriteLine("Exception: " + e.Message);
+                    for (int j = 0; j < board.BoardSize; j++)
+                    {
+                        sw.Write(board.Board[i, j] + " ");
+                    }
+                    sw.WriteLine();
                 }
+
+                sw.WriteLine("\nTotal time: {0}", elapsedTime);
+
+                sw.Close();
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine("Exception: " + e.Message);
             }
         }
     }
