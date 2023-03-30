@@ -3,11 +3,10 @@ namespace hw4
 {
 	public class GuessSolver : SolverTemplate
 	{
-		// Constructor
 		public GuessSolver(GameBoard board) : base(board) {}
 
 		/// <summary>
-		/// 
+		/// Randomly guesses values for the board
 		/// </summary>
 		public override bool UseStrategy(int row, int col)
 		{

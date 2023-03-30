@@ -21,24 +21,28 @@ namespace hw4
 
             // TODO: Remove this once you are ready to test your command line arguments
             // string inputFilePath = "/Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-4x4-0001.txt";
-             string inputFilePath = "/Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-9x9-0001.txt";
-            //string inputFilePath = "/Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-16x16-0001.txt";
+             //string inputFilePath = "/Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-9x9-0001.txt";
+            string inputFilePath = "/Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-16x16-0001.txt";
             //string inputFilePath = "/Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-25x25-0101.txt";
             //string inputFilePath = "/Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-36x36-01-A001.txt";
-            string solverName = "GuessSolver";
             GameBoard sudokuBoard = new(inputFilePath);
 
             DisplayBoard(sudokuBoard, "Starting");
 
             GuessSolver guessSolver = new(sudokuBoard);
+            NotesSolver notesSolver = new(sudokuBoard);
 
             // Start the timer
             var watch = System.Diagnostics.Stopwatch.StartNew();
             if (guessSolver.Solve(0, 0)) 
             {
-                Console.WriteLine("\nSolved!\n");
+                Console.WriteLine("\nSolved with guess solver!\n");
             } 
-            else 
+            else if (notesSolver.Solve(0, 0))
+            {
+                Console.WriteLine("\nSolved with notes solver!\n");
+            }
+            else
             {
                 Console.WriteLine("\nNo solution found\n");
             }
