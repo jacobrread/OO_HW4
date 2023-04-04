@@ -4,6 +4,7 @@ namespace hw4
 	public abstract class SolverTemplate
 	{
 		public GameBoard Board { get; }
+		public abstract string Name { get; }
 
 		// Constructor
 		public SolverTemplate(GameBoard board)
@@ -84,41 +85,7 @@ namespace hw4
 		/// <summary>
 		/// Solves the board recursively
 		/// </summary>
-		public bool Solve(int row, int col) 
-		{
-			// If we've reached the end of the board, we're done
-			if (row == Board.BoardSize - 1 && col == Board.BoardSize)
-			{
-				return true;
-			}
-
-			// If we've reached the end of the row, move to the next row
-			if (col == Board.BoardSize)
-			{
-				row++;
-				col = 0;
-			}
-
-			// If the current cell is already filled, move to the next cell
-			if (Board.Board[row, col] != "-")
-			{
-				return Solve(row, col + 1);
-			}
-
-			if (UseStrategy(row, col))
-			{
-				return Solve(row, col + 1);
-			}
-
-			// If we've reached this point, we've tried all possible values and none of them worked
-			return false;
-		}
-
-		/// <summary>
-		///	Uses the specific strategy implemented by the child class
-		/// </summary>
-		/// <param name="row">The row to check</param>
-		/// <param name="column">The column to check</param>
-		public abstract bool UseStrategy(int row, int column);
+		// public abstract bool Solve();
+		public abstract bool Solve();
 	}
 }

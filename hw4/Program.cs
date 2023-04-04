@@ -20,43 +20,75 @@ namespace hw4
             //if (args[2] == "true") DisplayBoard(sudokuBoard);
 
             // TODO: Remove this once you are ready to test your command line arguments
-            // string inputFilePath = "/Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-4x4-0001.txt";
+             //string inputFilePath = "/Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-4x4-0001.txt";
              //string inputFilePath = "/Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-9x9-0001.txt";
-            string inputFilePath = "/Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-16x16-0001.txt";
+             //string inputFilePath = "/Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-16x16-0001.txt";
             //string inputFilePath = "/Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-25x25-0101.txt";
-            //string inputFilePath = "/Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-36x36-01-A001.txt";
+            string inputFilePath = "/Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-36x36-01-A001.txt";
             GameBoard sudokuBoard = new(inputFilePath);
 
-            DisplayBoard(sudokuBoard, "Starting");
+            DisplayBoardToConsole(sudokuBoard, "Starting");
 
             GuessSolver guessSolver = new(sudokuBoard);
             NotesSolver notesSolver = new(sudokuBoard);
+            ReplacementSolver replacementSolver = new(sudokuBoard);
 
+            // Create a dictionary to store the stats: {SolverName, {Solved, Time}}
+            Dictionary<string, long[]> stats = new() {
+                { "GuessSolver", new long[2] },
+                { "NotesSolver", new long[2] },
+                { "ReplacementSolver", new long[2] }
+            };
+
+            foreach (var solver in stats.Keys)
+            {
+                if (solver == "GuessSolver")
+                {
+                    Console.WriteLine("Spinning up GuessSolver...");
+                    stats = UseAlgorithm(guessSolver, stats);
+                }
+                else if (solver == "NotesSolver")
+                {
+                    Console.WriteLine("Spinning up NotesSolver...");
+                    notesSolver.Board.Reset();
+                    Console.WriteLine("Reset NotesSolver board");
+                    stats = UseAlgorithm(notesSolver, stats);
+                }
+                else if (solver == "ReplacementSolver")
+                {
+                    Console.WriteLine("Spinning up ReplacementSolver...");
+                    replacementSolver.Board.Reset();
+                    Console.WriteLine("Reset ReplacementSolver board");
+                    stats = UseAlgorithm(replacementSolver, stats);
+                }
+            }
+
+            OutputSolution(sudokuBoard, stats);
+        }
+
+        /// <summary>
+        /// Uses the specified algorithm to solve the puzzle
+        /// </summary>
+        /// <param name="solver">The algorithm to use</param>
+        /// <param name="stats">The dictionary to store the stats</param>
+        /// <returns>The dictionary with the updated stats</returns>
+        public static Dictionary<string, long[]> UseAlgorithm(SolverTemplate solver, Dictionary<string, long[]> stats)
+        {
             // Start the timer
             var watch = System.Diagnostics.Stopwatch.StartNew();
-            if (guessSolver.Solve(0, 0)) 
-            {
-                Console.WriteLine("\nSolved with guess solver!\n");
-            } 
-            else if (notesSolver.Solve(0, 0))
-            {
-                Console.WriteLine("\nSolved with notes solver!\n");
-            }
-            else
-            {
-                Console.WriteLine("\nNo solution found\n");
-            }
+
+            // Solve the puzzle
+            bool solved = solver.Solve();
 
             // Stop the timer
             watch.Stop();
-            var elapsedMs = watch.ElapsedMilliseconds;
-            string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
-                TimeSpan.FromMilliseconds(elapsedMs).Hours,
-                TimeSpan.FromMilliseconds(elapsedMs).Minutes,
-                TimeSpan.FromMilliseconds(elapsedMs).Seconds,
-                TimeSpan.FromMilliseconds(elapsedMs).Milliseconds / 10);
+            long elapsedMs = watch.ElapsedMilliseconds;
 
-            OutputSolution(sudokuBoard, elapsedTime);
+            // Save the stats
+            stats[solver.Name][0] = solved ? 1 : 0;
+            stats[solver.Name][1] = elapsedMs;
+
+            return stats;
         }
 
         /// <summary>
@@ -64,7 +96,7 @@ namespace hw4
         /// </summary>
         /// <param name="board">The board to display</param>
         /// <param name="name">The name of the board</param>
-        public static void DisplayBoard(GameBoard board, string name)
+        public static void DisplayBoardToConsole(GameBoard board, string name)
         {
             Console.WriteLine("{0} Board:\n", name);
 
@@ -72,7 +104,13 @@ namespace hw4
             {
                 for (int j = 0; j < board.BoardSize; j++)
                 {
+                    if (board.Board[i,j] != board.OriginalBoard[i,j])
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                    }
+                    
                     Console.Write(board.Board[i, j] + " ");
+                    Console.ForegroundColor = ConsoleColor.White;
 
                     if ((j + 1) % board.SquareSize == 0 && j != board.BoardSize - 1)
                     {
@@ -97,11 +135,29 @@ namespace hw4
         }
 
         /// <summary>
+        /// Displays the stats to the console
+        /// </summary>
+        /// <param name="stats">The dictionary of stats</param>
+        private static long GetTotalTime(Dictionary<string, long[]> stats)
+        {
+            long totalTime = 0;
+
+            foreach (var solver in stats.Keys)
+            {
+                totalTime += stats[solver][1];
+            }
+
+            return totalTime;
+        }
+
+        /// <summary>
         /// Outputs the solution to a file
         /// </summary>
-        public static void OutputSolution(GameBoard board, string elapsedTime)
+        /// <param name="board">The board to output</param>
+        /// <param name="stats">The dictionary of stats</param>
+        public static void OutputSolution(GameBoard board, Dictionary<string, long[]> stats)
         {
-            DisplayBoard(board, "\nFinal");
+            DisplayBoardToConsole(board, "\nFinal");
 
             try
             {
@@ -137,7 +193,14 @@ namespace hw4
                     sw.WriteLine();
                 }
 
-                sw.WriteLine("\nTotal time: {0}", elapsedTime);
+                // Add stats to output file
+                long elapsedTime = GetTotalTime(stats);
+                sw.WriteLine("\nTotal time (ms): {0}", elapsedTime);
+                foreach (var solver in stats.Keys)
+                {
+                    sw.WriteLine("{0} Solved: {1}", solver, stats[solver][0] == 1 ? "Yes" : "No");
+                    sw.WriteLine("{0} Time (ms): {1}", solver, stats[solver][1]);
+                }
 
                 sw.Close();
             }

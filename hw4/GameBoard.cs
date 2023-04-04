@@ -6,7 +6,7 @@ namespace hw4
 		public int BoardSize { get; }
 		public string[] Characters { get; }
 		public string[,] Board { get; set; }
-		public string[,] OriginalBoard { get; }
+		public string[,] ?OriginalBoard { get; }
 		public int SquareSize { get; }
 
 		public GameBoard(string filePath)
@@ -38,6 +38,39 @@ namespace hw4
 			// Close the file
 			sr.Close();
 		}
+
+		public void Reset()
+		{
+			this.Board = this.OriginalBoard.Clone() as string[,];
+		}
+
+		public GameBoard(int boardSize, string[] characters, string[,] board, int squareSize)
+		{
+			this.BoardSize = boardSize;
+			this.Characters = characters;
+			this.Board = board.Clone() as string[,];
+			this.SquareSize = squareSize;
+			this.OriginalBoard = board.Clone() as string[,];
+		}
+
+		// public GameBoard Clone()
+		// {
+		// 	GameBoard clone = new(this.BoardSize, this.Characters, this.Board, this.SquareSize);
+		// 	return clone;
+		// }
+
+		// private string[,] CloneBoard()
+		// {
+		// 	string[,] clone = new string[BoardSize, BoardSize];
+		// 	for (int i = 0; i < BoardSize; i++)
+		// 	{
+		// 		for (int j = 0; j < BoardSize; j++)
+		// 		{
+		// 			clone[i, j] = Board[i, j];
+		// 		}
+		// 	}
+		// 	return clone;
+		// }
 	}
 }
 
