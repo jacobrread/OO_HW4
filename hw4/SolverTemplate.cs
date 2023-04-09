@@ -1,6 +1,7 @@
 ﻿using System;
 namespace hw4
 {
+	// Trey: Template method -> abstract class
 	public abstract class SolverTemplate
 	{
 		public GameBoard Board { get; }
@@ -17,6 +18,7 @@ namespace hw4
 		/// </summary>
 		/// <param name="row">The row to check</param>
 		/// <param name="value">The value to check for</param>
+		/// <returns>True if it is safe, false if it is not</returns>
 		public bool CheckRow(int row, string value)
 		{
 			for (int i = 0; i < Board.BoardSize; i++)
@@ -34,6 +36,7 @@ namespace hw4
 		/// </summary>
 		/// <param name="col">The column to check</param>
 		/// <param name="value">The value to check for</param>
+		/// <returns>True if it is safe, false if it is not</returns>
 		public bool CheckCol(int col, string value)
 		{
 			for (int i = 0; i < Board.BoardSize; i++)
@@ -52,6 +55,7 @@ namespace hw4
 		/// <param name="row">The row to check</param>
 		/// <param name="col">The column to check</param>
 		/// <param name="value">The value to check for</param>
+		/// <returns>True if it is safe, false if it is not</returns>
 		public bool CheckBox(int row, int col, string value)
 		{
 			int rowStart = row - row % Board.SquareSize;
@@ -73,6 +77,10 @@ namespace hw4
 		/// <summary>
 		/// Checks if a value is in a row, column, or box
 		/// </summary>
+		/// <param name="row">The row to check</param>
+		/// <param name="col">The column to check</param>
+		/// <param name="value">The value to check for</param>
+		/// <returns>True if it is safe, false if it is not</returns>
 		public bool ChecksOut(int row, int col, string value)
 		{
 			bool inRow = CheckRow(row, value);
@@ -85,7 +93,6 @@ namespace hw4
 		/// <summary>
 		/// Solves the board recursively
 		/// </summary>
-		// public abstract bool Solve();
 		public abstract bool Solve();
 	}
 }

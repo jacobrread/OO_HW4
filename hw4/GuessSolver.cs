@@ -12,6 +12,7 @@ namespace hw4
 		/// <summary>
 		/// Calls the recursive solver
 		/// </summary>
+		/// <returns>True if the board is solved, false if it is not</returns>
 		public override bool Solve()
 		{
 			return RecursivelySolve(0, 0);
@@ -22,28 +23,29 @@ namespace hw4
 		/// </summary>
 		/// <param name="row">The current row</param>
 		/// <param name="col">The current column</param>
+		/// <returns>True if the board is solved, false if it is not</returns>
 		private bool RecursivelySolve(int row, int col) 
 		{
-			// If we've reached the end of the board, we're done
+			// Stop at the end of the board
 			if (row == Board.BoardSize - 1 && col == Board.BoardSize)
 			{
 				return true;
 			}
 
-			// If we've reached the end of the row, move to the next row
+			// Change rows
 			if (col == Board.BoardSize)
 			{
 				row++;
 				col = 0;
 			}
 
-			// If the current cell is already filled, move to the next cell
+			// Check if the current cell is already filled
 			if (Board.Board[row, col] != "-")
 			{
 				return RecursivelySolve(row, col + 1);
 			}
 
-			// If the current cell is empty, try to fill it
+			// Finally, try to solve this cell
 			if (UseStrategy(row, col))
 			{
 				return RecursivelySolve(row, col + 1);
@@ -58,6 +60,7 @@ namespace hw4
 		/// </summary>s
 		/// <param name="row">The row to start at</param>
 		/// <param name="col">The column to start at</param>
+		/// <returns>True if it finds a value that fits, false if it does not</returns>
 		private bool UseStrategy(int row, int col)
 		{
 			// Try all possible values

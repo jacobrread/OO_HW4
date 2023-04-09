@@ -49,12 +49,24 @@ public class Tests
     [Test]
     public void TestFindSingles() 
     {
-        string inputFilePath = "/Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-9x9-0001.txt";
-        Console.WriteLine(Directory.GetCurrentDirectory());
+        string inputFilePath = "/Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-4x4-0001.txt";
+        GameBoard sudokuBoard = new(inputFilePath);
+        NotesSolver notesSolver = new(sudokuBoard);
+        bool[] singles = notesSolver.FindSingles(0);
+        Assert.That(singles, Is.EqualTo(new[] {false, true, false, false}));
     }
 
     [Test]
-    public void TestNotes() {}
+    public void TestNotes() 
+    {
+        string inputFilePath = "/Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-4x4-0001.txt";
+        GameBoard sudokuBoard = new(inputFilePath);
+        NotesSolver notesSolver = new(sudokuBoard);
+        Assert.That(notesSolver.NotesList[0,1], Is.EqualTo(new[] {"4"}));
+        Assert.That(notesSolver.NotesList[1,2], Is.EqualTo(new[] {"2"}));
+        Assert.That(notesSolver.NotesList[2,3], Is.EqualTo(new[] {"2"}));
+        Assert.That(notesSolver.NotesList[3,0], Is.EqualTo(new[] {"4"}));
+    }
 
     [Test]
     public void TestCheckRow()
@@ -108,5 +120,22 @@ public class Tests
         GuessSolver solver = new(sudokuBoard);
         bool isRowSafe = solver.CheckBox(0, 0, "4");
         Assert.That(isRowSafe, Is.EqualTo(true));
+    }
+
+    [Test]
+    public void TestIsValidBoard()
+    {
+        string[,] board = new[,]
+        {
+            {"2", "-", "3", "1"},
+            {"1", "9", "-", "4"},
+            {"3", "1", "4", "-"},
+            {"-", "2", "1", "3"}
+        };
+        string[] values = {"1", "2", "3", "4"};
+
+        GameBoard sudokuBoard = new(4, values, board, 2);
+        bool isValid = SudokuSolver.IsValidBoard(sudokuBoard);
+        Assert.That(isValid, Is.EqualTo(false));
     }
 }

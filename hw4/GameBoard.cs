@@ -39,11 +39,13 @@ namespace hw4
 			sr.Close();
 		}
 
-		public void Reset()
-		{
-			this.Board = this.OriginalBoard.Clone() as string[,];
-		}
-
+		/// <summary>
+		/// Overloaded constructor
+		/// </summary>
+		/// <param name="boardSize">Size of the board</param>
+		/// <param name="characters">Array of available characters for the board</param>
+		/// <param name="board">The layout of the board</param>
+		/// <param name="squareSize">The size of the squares for the board</param>
 		public GameBoard(int boardSize, string[] characters, string[,] board, int squareSize)
 		{
 			this.BoardSize = boardSize;
@@ -53,24 +55,10 @@ namespace hw4
 			this.OriginalBoard = board.Clone() as string[,];
 		}
 
-		// public GameBoard Clone()
-		// {
-		// 	GameBoard clone = new(this.BoardSize, this.Characters, this.Board, this.SquareSize);
-		// 	return clone;
-		// }
-
-		// private string[,] CloneBoard()
-		// {
-		// 	string[,] clone = new string[BoardSize, BoardSize];
-		// 	for (int i = 0; i < BoardSize; i++)
-		// 	{
-		// 		for (int j = 0; j < BoardSize; j++)
-		// 		{
-		// 			clone[i, j] = Board[i, j];
-		// 		}
-		// 	}
-		// 	return clone;
-		// }
-	}
+        //public void Reset()
+        //{
+        //	this.Board = this.OriginalBoard.Clone() as string[,];
+        //}
+    }
 }
 

@@ -1,70 +1,138 @@
 ﻿using System;
 namespace hw4
 {
-    class SudokuSolver
+    public class SudokuSolver
     {
         static void Main(string[] args)
         {
-            //if (args.Length != 3)
-            //{
-            //    Console.WriteLine("Usage: SudokuSolver <input file> <solver>");
-            //    Console.WriteLine("Solvers: GuessSolver, BacktrackingSolver, DancingLinksSolver");
-            //    Console.WriteLine("Display board: true/false");
-            //    return;
-            //}
+            if (args.Length != 1)
+            {
+               Console.WriteLine("Usage: SudokuSolver <input file>");
+               return;
+            }
 
-            //// Save input arguments
-            //string inputFilePath = args[0];
-            //string solverName = args[1];
+            // Save input arguments
+            string inputFilePath = args[0];
 
-            //if (args[2] == "true") DisplayBoard(sudokuBoard);
+            // File paths to good puzzles
+            // /Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-4x4-0001.txt
+            // /Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-9x9-0001.txt
+            // /Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-16x16-0001.txt
+            // /Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-25x25-0101.txt
+            // /Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-36x36-01-A001.txt
 
-            // TODO: Remove this once you are ready to test your command line arguments
-             //string inputFilePath = "/Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-4x4-0001.txt";
-             //string inputFilePath = "/Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-9x9-0001.txt";
-             //string inputFilePath = "/Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-16x16-0001.txt";
-            //string inputFilePath = "/Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-25x25-0101.txt";
-            string inputFilePath = "/Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-36x36-01-A001.txt";
-            GameBoard sudokuBoard = new(inputFilePath);
+            // File paths to bad puzzles
+            // /Users/jacobread/Desktop/OO/hw4/hw4/SamplePuzzles/Input/Puzzle-4x4-0901.txt
 
-            DisplayBoardToConsole(sudokuBoard, "Starting");
+            GameBoard sudokuBoard1 = new(inputFilePath);
 
-            GuessSolver guessSolver = new(sudokuBoard);
-            NotesSolver notesSolver = new(sudokuBoard);
-            ReplacementSolver replacementSolver = new(sudokuBoard);
+            if (!IsValidBoard(sudokuBoard1))
+            {
+                Console.WriteLine("Invalid board");
+                BadBoardOutput(sudokuBoard1);
+                return;
+            }
+
+            GameBoard sudokuBoard2 = new(inputFilePath);
+            GameBoard sudokuBoard3 = new(inputFilePath);
+            GameBoard sudokuBoard4 = new(inputFilePath);
+
+            DisplayBoardToConsole(sudokuBoard1, "Starting");
+
+            GuessSolver guessSolver = new(sudokuBoard1);
+            NotesSolver notesSolver = new(sudokuBoard2);
+            ReplacementSolver replacementSolver = new(sudokuBoard3);
+            NotesSolverWithReplacement notesSolverWithReplacement = new(sudokuBoard4);
+
+            SolverTemplate[] boards = { guessSolver, notesSolver, replacementSolver, notesSolverWithReplacement };
 
             // Create a dictionary to store the stats: {SolverName, {Solved, Time}}
             Dictionary<string, long[]> stats = new() {
                 { "GuessSolver", new long[2] },
                 { "NotesSolver", new long[2] },
+                { "NotesSolver2", new long[2] },
                 { "ReplacementSolver", new long[2] }
             };
 
-            foreach (var solver in stats.Keys)
+            Parallel.ForEach(stats.Keys, solver =>
             {
                 if (solver == "GuessSolver")
                 {
-                    Console.WriteLine("Spinning up GuessSolver...");
                     stats = UseAlgorithm(guessSolver, stats);
                 }
                 else if (solver == "NotesSolver")
                 {
-                    Console.WriteLine("Spinning up NotesSolver...");
-                    notesSolver.Board.Reset();
-                    Console.WriteLine("Reset NotesSolver board");
                     stats = UseAlgorithm(notesSolver, stats);
                 }
                 else if (solver == "ReplacementSolver")
                 {
-                    Console.WriteLine("Spinning up ReplacementSolver...");
-                    replacementSolver.Board.Reset();
-                    Console.WriteLine("Reset ReplacementSolver board");
                     stats = UseAlgorithm(replacementSolver, stats);
                 }
-            }
+                else if (solver == "NotesSolver2")
+                {
+                    stats = UseAlgorithm(notesSolverWithReplacement, stats);
+                }
+            });
 
-            OutputSolution(sudokuBoard, stats);
+            DetermineSolved(boards, stats);
         }
+
+        /// <summary>
+        /// Checks the board to see if there are any invalid characters
+        /// </summary>
+        /// <param name="board">The board to check</param>
+        /// <returns>True if the board is valid, false if not</returns>
+        public static bool IsValidBoard(GameBoard board)
+        {
+            for (int i = 0; i < board.BoardSize; i++)
+            {
+                for (int j = 0; j < board.BoardSize; j++)
+                {
+                    string value = board.Board[i, j];
+                    if (!board.Characters.Contains(value))
+                    {
+                        if (!value.Equals("-")) return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Finds a solved board out of the four solving methods
+        /// </summary>
+        /// <param name="solvers">Array containing the four solving method objects</param>
+        /// <param name="stats">Dictionary containing the stats for the four solving methods</param>
+        /// <returns>True if a solved board is found, false if not</returns>
+        private static bool DetermineSolved(SolverTemplate[] solvers, Dictionary<string, long[]> stats)
+        {
+            foreach (SolverTemplate solver in solvers)
+            {
+                if (IsSolved(solver.Board))
+                {
+                    OutputSolution(solver.Board, stats);
+                    return true;
+                }
+            }
+            OutputSolution(null, stats);
+            return false;
+        }
+
+        /// <summary>
+		/// Checks if the board is solved
+		/// </summary>
+		/// <returns>True if the board is solved, false otherwise</returns>
+		private static bool IsSolved(GameBoard board) 
+		{
+			for (int i = 0; i < board.BoardSize; i++) {
+				for (int j = 0; j < board.BoardSize; j++) {
+					if (board.Board[i, j] == "-") {
+						return false;
+					}
+				}
+			}
+			return true;
+		}
 
         /// <summary>
         /// Uses the specified algorithm to solve the puzzle
@@ -161,8 +229,8 @@ namespace hw4
 
             try
             {
-                //// TODO: Make this output location dynamic
-                StreamWriter sw = new StreamWriter("/Users/jacobread/Desktop/OO/hw4/hw4/Output.txt");
+                string projectPath = Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(Directory.GetCurrentDirectory()))));
+                StreamWriter sw = new StreamWriter(Path.Combine(projectPath, "hw4/Output.txt"));
 
                 // Add board size, characters, and original board to output file
                 sw.WriteLine(board.BoardSize);
@@ -182,15 +250,22 @@ namespace hw4
                 }
                 sw.WriteLine();
 
-                // Add solution to output file
-                sw.WriteLine("Solved");
-                for (int i = 0; i < board.BoardSize; i++)
+                if (board == null)
                 {
-                    for (int j = 0; j < board.BoardSize; j++)
+                    sw.WriteLine("The board could not be solved");
+                }
+                else
+                {
+                    // Add solution to output file
+                    sw.WriteLine("Solved");
+                    for (int i = 0; i < board.BoardSize; i++)
                     {
-                        sw.Write(board.Board[i, j] + " ");
+                        for (int j = 0; j < board.BoardSize; j++)
+                        {
+                            sw.Write(board.Board[i, j] + " ");
+                        }
+                        sw.WriteLine();
                     }
-                    sw.WriteLine();
                 }
 
                 // Add stats to output file
@@ -208,6 +283,36 @@ namespace hw4
             {
                 Console.WriteLine("Exception: " + e.Message);
             }
+        }
+
+        /// <summary>
+        /// Alternate output method for bad boards
+        /// </summary>
+        /// <param name="board">The board to output</param>
+        private static void BadBoardOutput(GameBoard board)
+        {
+            string projectPath = Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(Directory.GetCurrentDirectory()))));
+                StreamWriter sw = new StreamWriter(Path.Combine(projectPath, "hw4/Output.txt"));
+
+                // Add board size, characters, and original board to output file
+                sw.WriteLine(board.BoardSize);
+                foreach (string c in board.Characters)
+                {
+                    sw.Write(c + " ");
+                }
+                sw.WriteLine();
+
+                for (int i = 0; i < board.BoardSize; i++)
+                {
+                    for (int j = 0; j < board.BoardSize; j++)
+                    {
+                        sw.Write(board.OriginalBoard[i, j] + " ");
+                    }
+                    sw.WriteLine();
+                }
+                sw.WriteLine();
+                sw.WriteLine("This board has an invalid character");
+                sw.Close();
         }
     }
 }

@@ -2,19 +2,24 @@
 namespace hw4
 {
     // Trey: Template method -> Concrete class 
-    public class ReplacementSolver : SolverTemplate
+    public class NotesSolverWithReplacement : SolverTemplate
 	{
 		public override string Name { get; }
-		public ReplacementSolver(GameBoard board) : base(board) 
+		private List<string>[,] NotesList;
+
+		// Constructor
+		public NotesSolverWithReplacement(GameBoard board) : base(board) 
 		{
-			this.Name = "ReplacementSolver";
+			this.Name = "NotesSolver2";
+			NotesList = new List<string>[Board.BoardSize, Board.BoardSize];
+			BuildNotes();
 		}
 
 		/// <summary>
-		/// Calls the recursive solver
+		/// Iteratively solves the board using the notes method
 		/// </summary>
 		/// <returns>True if the board is solved, false if it is not</returns>
-		public override bool Solve()
+		public override bool Solve() 
 		{
 			return RecursivelySolve(Board.Board);
 		}
@@ -58,13 +63,15 @@ namespace hw4
 				return true;
 			}
 
-			foreach (string value in Board.Characters) 
+			// Use note list to solve
+			foreach (string value in NotesList[row, col])
 			{
-				if (ChecksOut(currentBoard, row, col, value)) 
+				// If the value is valid, use it
+				if (ChecksOut(row, col, value))
 				{
 					currentBoard[row, col] = value;
-					if (RecursivelySolve(currentBoard)) 
-					{	
+					if (RecursivelySolve(currentBoard))
+					{
 						return true;
 					}
 					else 
@@ -94,7 +101,7 @@ namespace hw4
 			return rowCheck && colCheck && boxCheck;
 		}
 
-		/// <summary>
+       /// <summary>
 		/// Checks the row to see if the value is safe - overloaded method to allow for the board to be passed in
 		/// </summary>
 		/// <param name="currentBoard">The current board</param>
@@ -159,5 +166,37 @@ namespace hw4
 			}
 			return true;
 		}
-    }
+
+		
+		/// <summary>
+		/// Builds a list of possible values for each cell
+		/// </summary>
+		private void BuildNotes()
+		{
+			for (int row = 0; row < Board.BoardSize; row++) 
+			{
+				for (int col = 0; col < Board.BoardSize; col++) 
+				{
+					NotesList[row, col] = new List<string>();
+				}
+			}
+
+			for (int row = 0; row < Board.BoardSize; row++)
+			{
+				for (int col = 0; col < Board.BoardSize; col++)
+				{
+					if (Board.Board[row, col] == "-")
+					{
+						foreach (string value in Board.Characters)
+						{
+							if (ChecksOut(row, col, value))
+							{
+								NotesList[row, col].Add(value);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 }
